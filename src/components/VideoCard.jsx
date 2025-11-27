@@ -85,6 +85,7 @@ const VideoCard = (props) => {
             profilePic={profilePic}
             isMuted={isMuted}
             onMuteToggle={handleMuteToggle}
+            videoUrl={url}
           />
         </div>
 

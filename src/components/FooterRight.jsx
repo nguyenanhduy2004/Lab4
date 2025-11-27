@@ -19,11 +19,13 @@ export default function FooterRight({
   shares,
   profilePic,
   isMuted,
-  onMuteToggle
+  onMuteToggle,
+  videoUrl
 }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [userAddIcon, setUserAddIcon] = useState(faCirclePlus);
+  const [copyMessage, setCopyMessage] = useState("");
 
   // ---- FORMAT LIKES ----
   const parseLikesCount = (count) => {
@@ -42,7 +44,21 @@ export default function FooterRight({
   // ---- HANDLERS ----
   const handleLikeClick = () => setLiked((prev) => !prev);
 
-  const handleSaveClick = () => setSaved((prev) => !prev);
+  const handleSaveClick = () => {
+    const newSaved = !saved;
+    setSaved(newSaved);
+    
+    // Copy video URL to clipboard when saving
+    if (newSaved && videoUrl) {
+      navigator.clipboard.writeText(videoUrl).then(() => {
+        setCopyMessage("URL Copied!");
+        setTimeout(() => setCopyMessage(""), 2000);
+      }).catch(() => {
+        setCopyMessage("Copy failed");
+        setTimeout(() => setCopyMessage(""), 2000);
+      });
+    }
+  };
 
   const handleUserAddClick = () => {
     setUserAddIcon(faCircleCheck);
@@ -100,22 +116,18 @@ export default function FooterRight({
       </div>
 
       {/* ---------------- SAVE / BOOKMARK ---------------- */}
-      <div className="sidebar-icon">
-        {saved ? (
-          <FontAwesomeIcon
-            icon={faBookmark}
-            style={{ width: "35px", height: "35px", color: "#ffc107" }}
-            onClick={() => setSaved(false)}
-          />
-        ) : (
-          <FontAwesomeIcon
-            icon={faBookmark}
-            style={{ width: "35px", height: "35px", color: "white" }}
-            onClick={() => setSaved(true)}
-          />
-        )}
-
+      <div className="sidebar-icon save-btn">
+        <FontAwesomeIcon
+          icon={faBookmark}
+          style={{ 
+            width: "35px", 
+            height: "35px", 
+            color: saved ? "#ffc107" : "white" 
+          }}
+          onClick={handleSaveClick}
+        />
         <p>{saved ? saves + 1 : saves}</p>
+        {copyMessage && <span className="copy-toast">{copyMessage}</span>}
       </div>
 
       {/* ---------------- SHARE ---------------- */}
