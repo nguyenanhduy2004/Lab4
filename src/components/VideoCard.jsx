@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import FooterLeft from "./FooterLeft";
 import FooterRight from "./FooterRight";
 import "./VideoCard.css";
@@ -19,6 +19,7 @@ const VideoCard = (props) => {
   } = props;
 
   const videoRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   // Auto play video if autoplay = true
   useEffect(() => {
@@ -26,6 +27,14 @@ const VideoCard = (props) => {
       videoRef.current.play().catch(() => {});
     }
   }, [autoplay]);
+
+  // Toggle mute/unmute
+  const handleMuteToggle = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
 
   // Toggle video play/pause on click
   const onVideoPress = () => {
@@ -50,6 +59,7 @@ const VideoCard = (props) => {
           setVideoRef(ref);
         }}
         loop
+        muted
         src={url}
       />
 
@@ -73,6 +83,8 @@ const VideoCard = (props) => {
             comments={comments}
             saves={saves}
             profilePic={profilePic}
+            isMuted={isMuted}
+            onMuteToggle={handleMuteToggle}
           />
         </div>
 

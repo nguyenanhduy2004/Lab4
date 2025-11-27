@@ -41,6 +41,19 @@
   font-weight: 500;
   margin-top: 5px;
 }
+.mute-btn {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.mute-btn:hover {
+  transform: scale(1.1);
+}
+
+.mute-btn:active {
+  transform: scale(0.95);
+}
+
 .record {
   animation: spinTheRecord infinite 5s linear;
   filter: invert(1);

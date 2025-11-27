@@ -6,7 +6,9 @@ import {
   faHeart,
   faCommentDots,
   faBookmark,
-  faShare
+  faShare,
+  faVolumeHigh,
+  faVolumeXmark
 } from "@fortawesome/free-solid-svg-icons";
 import "./FooterRight.css";
 
@@ -15,7 +17,9 @@ export default function FooterRight({
   comments,
   saves,
   shares,
-  profilePic
+  profilePic,
+  isMuted,
+  onMuteToggle
 }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -121,6 +125,15 @@ export default function FooterRight({
           style={{ width: "35px", height: "35px", color: "white" }}
         />
         <p>{shares}</p>
+      </div>
+
+      {/* ---------------- MUTE/UNMUTE ---------------- */}
+      <div className="sidebar-icon mute-btn" onClick={onMuteToggle}>
+        <FontAwesomeIcon
+          icon={isMuted ? faVolumeXmark : faVolumeHigh}
+          style={{ width: "35px", height: "35px", color: "white" }}
+        />
+        <p>{isMuted ? "Unmute" : "Mute"}</p>
       </div>
 
       {/* ---------------- RECORD ICON ---------------- */}
