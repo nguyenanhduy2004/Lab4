@@ -55,6 +55,8 @@ const videoUrls = [
 
 function App() {
   const [videos, setVideos] = useState([]);
+  const [filteredVideos, setFilteredVideos] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const videoRefs = useRef([]);
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -71,10 +73,41 @@ function App() {
 
   useEffect(() => {
     setVideos(videoUrls);
+    setFilteredVideos(videoUrls);
   }, []);
 
-  // Handle keyboard navigation
+  // Handle search by hashtag
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query);
+    
+    // Normalize the search query (add # if not present)
+    const searchTerm = query.startsWith('#') ? query.toLowerCase() : `#${query.toLowerCase()}`;
+    
+    // Filter videos that contain the hashtag in their description
+    const filtered = videoUrls.filter(video => 
+      video.description.toLowerCase().includes(searchTerm)
+    );
+    
+    setFilteredVideos(filtered);
+    setCurrentIndex(0);
+    
+    // Reset video refs for new filtered list
+    videoRefs.current = [];
+  }, []);
+
+  // Clear search and show all videos
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setFilteredVideos(videoUrls);
+    setCurrentIndex(0);
+    videoRefs.current = [];
+  }, []);
+
+  // Handle keyboard navigation (only when not in search input)
   const handleKeyDown = useCallback((e) => {
+    // Don't handle arrow keys when typing in search
+    if (e.target.tagName === 'INPUT') return;
+    
     if (e.key === 'ArrowRight') {
       setShowProfile(true);
     } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
@@ -95,7 +128,7 @@ function App() {
   }, []);
 
   // Get current video data
-  const currentVideo = videos[currentIndex] || {};
+  const currentVideo = filteredVideos[currentIndex] || {};
 
   useEffect(() => {
     const observerOptions = {
@@ -126,14 +159,14 @@ function App() {
 
     // We observe each video reference to trigger play/pause
     videoRefs.current.forEach((videoRef) => {
-      observer.observe(videoRef);
+      if (videoRef) observer.observe(videoRef);
     });
 
     // We disconnect the observer when the component is unmounted
     return () => {
       observer.disconnect();
     };
-  }, [videos]);
+  }, [filteredVideos]);
 
   // This function handles the reference of each video
   const handleVideoRef = (index) => (ref) => {
@@ -142,7 +175,7 @@ function App() {
 
   // Navigate to a specific video by index
   const scrollToVideo = (index) => {
-    if (index >= 0 && index < videos.length && videoRefs.current[index]) {
+    if (index >= 0 && index < filteredVideos.length && videoRefs.current[index]) {
       videoRefs.current[index].scrollIntoView({ behavior: 'smooth' });
       setCurrentIndex(index);
     }
@@ -236,11 +269,37 @@ function App() {
         onTouchEnd={handleTouchEnd}
         style={{ cursor: dragState.current.isDragging ? 'grabbing' : 'grab' }}
       >
-        <TopNavbar className="top-navbar" />
-        {/* Here we map over the videos array and create VideoCard components */}
-        {videos.map((video, index) => (
+        <TopNavbar 
+          className="top-navbar" 
+          onSearch={handleSearch}
+          searchQuery={searchQuery}
+          onClearSearch={handleClearSearch}
+        />
+        
+        {/* Search Results Indicator */}
+        {searchQuery && (
+          <div className="search-results-indicator">
+            <span>Results for: <strong>{searchQuery}</strong></span>
+            <span className="results-count">{filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''}</span>
+          </div>
+        )}
+        
+        {/* No Results Message */}
+        {filteredVideos.length === 0 && searchQuery && (
+          <div className="no-results">
+            <div className="no-results-icon">🔍</div>
+            <h3>No videos found</h3>
+            <p>No videos with hashtag "{searchQuery}"</p>
+            <button className="clear-search-btn" onClick={handleClearSearch}>
+              Show all videos
+            </button>
+          </div>
+        )}
+        
+        {/* Here we map over the filtered videos array and create VideoCard components */}
+        {filteredVideos.map((video, index) => (
           <VideoCard
-            key={index}
+            key={`${video.username}-${index}`}
             username={video.username}
             description={video.description}
             song={video.song}
