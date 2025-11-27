@@ -20,7 +20,8 @@ export default function FooterRight({
   profilePic,
   isMuted,
   onMuteToggle,
-  videoUrl
+  videoUrl,
+  onProfileClick
 }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -79,7 +80,9 @@ export default function FooterRight({
             src={profilePic}
             className="userprofile"
             alt="Profile"
-            style={{ width: "45px", height: "45px", color: "#616161" }}
+            style={{ width: "45px", height: "45px", color: "#616161", cursor: "pointer" }}
+            onClick={onProfileClick}
+            title="View profile"
           />
         ) : null}
 

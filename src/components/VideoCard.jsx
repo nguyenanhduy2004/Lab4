@@ -15,7 +15,8 @@ const VideoCard = (props) => {
     shares,
     profilePic,
     setVideoRef,
-    autoplay
+    autoplay,
+    onProfileClick
   } = props;
 
   const videoRef = useRef(null);
@@ -86,6 +87,7 @@ const VideoCard = (props) => {
             isMuted={isMuted}
             onMuteToggle={handleMuteToggle}
             videoUrl={url}
+            onProfileClick={onProfileClick}
           />
         </div>
 
