@@ -55,6 +55,15 @@ const videoUrls = [
 function App() {
   const [videos, setVideos] = useState([]);
   const videoRefs = useRef([]);
+  const containerRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Drag state
+  const dragState = useRef({
+    isDragging: false,
+    startY: 0,
+    currentY: 0,
+  });
 
   useEffect(() => {
     setVideos(videoUrls);
@@ -73,6 +82,11 @@ function App() {
         if (entry.isIntersecting) {
           const videoElement = entry.target;
           videoElement.play();
+          // Update current index based on which video is visible
+          const index = videoRefs.current.indexOf(videoElement);
+          if (index !== -1) {
+            setCurrentIndex(index);
+          }
         } else {
           const videoElement = entry.target;
           videoElement.pause();
@@ -98,9 +112,82 @@ function App() {
     videoRefs.current[index] = ref;
   };
 
+  // Navigate to a specific video by index
+  const scrollToVideo = (index) => {
+    if (index >= 0 && index < videos.length && videoRefs.current[index]) {
+      videoRefs.current[index].scrollIntoView({ behavior: 'smooth' });
+      setCurrentIndex(index);
+    }
+  };
+
+  // Mouse drag handlers
+  const handleMouseDown = (e) => {
+    dragState.current.isDragging = true;
+    dragState.current.startY = e.clientY;
+    dragState.current.currentY = e.clientY;
+    
+    // Prevent text selection while dragging
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!dragState.current.isDragging) return;
+    dragState.current.currentY = e.clientY;
+  };
+
+  const handleMouseUp = () => {
+    if (!dragState.current.isDragging) return;
+    
+    const dragDistance = dragState.current.startY - dragState.current.currentY;
+    const threshold = 50; // Minimum drag distance to trigger navigation
+    
+    if (dragDistance > threshold) {
+      // Dragged up - go to next video
+      scrollToVideo(currentIndex + 1);
+    } else if (dragDistance < -threshold) {
+      // Dragged down - go to previous video
+      scrollToVideo(currentIndex - 1);
+    }
+    
+    dragState.current.isDragging = false;
+  };
+
+  const handleMouseLeave = () => {
+    if (dragState.current.isDragging) {
+      handleMouseUp();
+    }
+  };
+
+  // Touch handlers for mobile support
+  const handleTouchStart = (e) => {
+    dragState.current.isDragging = true;
+    dragState.current.startY = e.touches[0].clientY;
+    dragState.current.currentY = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!dragState.current.isDragging) return;
+    dragState.current.currentY = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseUp();
+  };
+
   return (
     <div className="app">
-      <div className="container">
+      <div 
+        className="container"
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ cursor: dragState.current.isDragging ? 'grabbing' : 'grab' }}
+      >
         <TopNavbar className="top-navbar" />
         {/* Here we map over the videos array and create VideoCard components */}
         {videos.map((video, index) => (

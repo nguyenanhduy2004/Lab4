@@ -18,6 +18,12 @@ html {
   border-radius: 25px;
   overflow: scroll;
   scroll-snap-type: y mandatory;
+  cursor: grab;
+  user-select: none;
+}
+
+.container:active {
+  cursor: grabbing;
 }
 
 .container::-webkit-scrollbar {
